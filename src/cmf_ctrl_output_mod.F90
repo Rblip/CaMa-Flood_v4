@@ -354,6 +354,15 @@ CONTAINS
 SUBROUTINE CREATE_OUTBIN
 IMPLICIT NONE
 !================================================
+#ifdef DOUTFLD
+! For daily flood output files, skip file opening here - files will be created per day
+IF( TRIM(VAROUT(JF)%CVNAME)=='flddph' ) THEN
+  WRITE(LOGNAM,*) "Daily flood files will be created: outfldYYYYMMDD.bin"
+  VAROUT(JF)%BINID=0  ! Flag for daily file mode
+  RETURN
+ENDIF
+#endif
+
 IF( TRIM(VAROUT(JF)%CVNAME)=='pthflw' ) THEN   !! bifurcation channel
   IF( REGIONTHIS==1 )THEN
     VAROUT(JF)%CFILE=TRIM(COUTDIR)//TRIM(VAROUT(JF)%CVNAME)//TRIM(COUTTAG)//TRIM(CSUFPTH)
@@ -619,7 +628,16 @@ IF ( MOD(JHOUR,IFRQ_OUT)==0 .and. JMIN==0 ) THEN             ! JHOUR: end of tim
         IF( LOUTVEC )THEN
           CALL WRTE_OUTVEC(VAROUT(JF)%BINID,IRECOUT,D2VEC)         !! 1D vector (optional)
         ELSE
+#ifdef DOUTFLD
+          ! Handle daily flood files
+          IF( TRIM(VAROUT(JF)%CVNAME)=='flddph' .and. VAROUT(JF)%BINID==0 ) THEN
+            IF ( REGIONTHIS==1 ) CALL WRTE_DAILY_FLD(R2OUT)       !! Daily flood file
+          ELSE
+            IF ( REGIONTHIS==1 ) CALL WRTE_OUTBIN(VAROUT(JF)%BINID,IRECOUT,R2OUT)     !! 2D map
+          ENDIF
+#else
           IF ( REGIONTHIS==1 ) CALL WRTE_OUTBIN(VAROUT(JF)%BINID,IRECOUT,R2OUT)         !! 2D map
+#endif
         ENDIF
       ENDIF
     ENDIF
@@ -879,5 +897,36 @@ ENDIF
 
 END SUBROUTINE CMF_OUTTXT_WRTE
 !####################################################################
+
+#ifdef DOUTFLD
+!####################################################################
+SUBROUTINE WRTE_DAILY_FLD(R2OUTDAT)
+! Write daily flood output to separate files named outfldYYYYMMDD.bin
+USE YOS_CMF_TIME,       ONLY: JYYYYMMDD
+USE CMF_UTILS_MOD,      ONLY: INQUIRE_FID
+IMPLICIT NONE
+!*** INPUT
+REAL(KIND=JPRM)                 :: R2OUTDAT(NX,NY)
+!*** LOCAL
+CHARACTER(LEN=256)              :: CFLDDAILY
+INTEGER(KIND=JPIM)              :: IFLDDAILY
+!================================================
+
+! Create filename with date: outfldYYYYMMDD.bin
+WRITE(CFLDDAILY,'(A,I8.8,A)') TRIM(COUTDIR)//'outfld',JYYYYMMDD,'.bin'
+
+! Get available file unit
+CALL INQUIRE_FID(IFLDDAILY)
+
+! Open, write, and close daily file
+OPEN(IFLDDAILY,FILE=CFLDDAILY,FORM='UNFORMATTED',ACCESS='DIRECT',RECL=4*NX*NY)
+WRITE(IFLDDAILY,REC=1) R2OUTDAT
+CLOSE(IFLDDAILY)
+
+WRITE(LOGNAM,*) 'Daily flood file written: ', TRIM(CFLDDAILY)
+
+END SUBROUTINE WRTE_DAILY_FLD
+!####################################################################
+#endif
 
 END MODULE CMF_CTRL_OUTPUT_MOD
