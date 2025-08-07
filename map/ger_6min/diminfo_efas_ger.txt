@@ -1,0 +1,9 @@
+# Dimension information for EFAS Germany domain
+# Placeholder - needs real German coordinates
+NX    120    # Number of longitude points (example)
+NY    80     # Number of latitude points (example) 
+WEST  6.0    # Western boundary (degrees)
+EAST  15.0   # Eastern boundary (degrees)
+SOUTH 47.0   # Southern boundary (degrees)
+NORTH 55.0   # Northern boundary (degrees)
+INPN2XY 0    # Input order: 0=WE->SN, 1=SN->WE
