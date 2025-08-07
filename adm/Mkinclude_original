@@ -1,6 +1,5 @@
 #==========================================================
-# CaMa-Flood Mkinclude (for German flood inundation simulation)
-# Based on default Mkinclude but with inundation flags
+# CaMa-Flood Mkinclude (for MaxOSX, gfortran)
 #==========================================================
 RM = /bin/rm -f
 CP = /bin/cp
@@ -11,21 +10,17 @@ CP = /bin/cp
 # DCDF=-DUseCDF_CMF        : activate netCDF, comment out when not needed
 # DSINGLE=-DSinglePrec_CMF : activate Single Precision Mode
 # DATM=-DNoAtom_CMF        : avoid OMP ATOMIC calculation (bit identical simulation)
-# DINUND=-DINUND           : enable inundation modeling capabilities
-# DOUTFLD=-DOUTFLD         : enable daily flood output files
 #======================================
 
 #DCDF=-DUseCDF_CMF
 #DMPI=-DUseMPI_CMF
 DSINGLE=-DSinglePrec_CMF
 #DATM=-DNoAtom_CMF
-DINUND=-DINUND
-DOUTFLD=-DOUTFLD
 
-CFLAGS=$(DMPI) $(DCDF) $(DATM) $(DSINGLE) $(DINUND) $(DOUTFLD)
+CFLAGS=$(DMPI) $(DCDF) $(DATM) $(DSINGLE)
 
 #======================================
-# gfortran Linux with OpenMP for inundation modeling
+# gfortran Linux
 #======================================
 
 #INC = -I/usr/local/include 
